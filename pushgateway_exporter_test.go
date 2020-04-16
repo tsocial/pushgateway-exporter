@@ -26,8 +26,8 @@ func TestPushGatewayExporter_Push(t *testing.T) {
 	// no parallel
 
 	// create exporter
-	serviceName := "push_gateway_test"
-	exporter, err := NewPushGatewayExporter(serviceName, getGatewayURL())
+	serviceName := "pgateway_push"
+	exporter, err := NewPushGatewayExporter(serviceName, getGatewayURL(), 1*time.Second)
 	require.Nil(t, err)
 
 	// create view
@@ -49,9 +49,9 @@ func TestPushGatewayExporter_Push(t *testing.T) {
 	exporter.push()
 
 	expectedMetric := `
-# HELP push_gateway_test_tests_foo foo
-# TYPE push_gateway_test_tests_foo counter
-push_gateway_test_tests_foo{instance="",job="push_gateway_test"} 2
+# HELP pgateway_push_tests_foo foo
+# TYPE pgateway_push_tests_foo counter
+pgateway_push_tests_foo{instance="",job="pgateway_push"} 2
 `
 	verifyData(t, expectedMetric)
 
@@ -62,9 +62,45 @@ push_gateway_test_tests_foo{instance="",job="push_gateway_test"} 2
 	exporter.push()
 
 	expectedMetric = `
-# HELP push_gateway_test_tests_foo foo
-# TYPE push_gateway_test_tests_foo counter
-push_gateway_test_tests_foo{instance="",job="push_gateway_test"} 4
+# HELP pgateway_push_tests_foo foo
+# TYPE pgateway_push_tests_foo counter
+pgateway_push_tests_foo{instance="",job="pgateway_push"} 4
+`
+	verifyData(t, expectedMetric)
+}
+
+func TestPushGatewayExporter_Run(t *testing.T) {
+	// no parallel
+
+	// create exporter
+	serviceName := "pgateway_run"
+	exporter, err := NewPushGatewayExporter(serviceName, getGatewayURL(), 300*time.Millisecond)
+	require.Nil(t, err)
+	exporter.Run()
+	defer exporter.Close()
+
+	// create view
+	m := stats.Int64("tests/foo", "foo", stats.UnitDimensionless)
+	v := &view.View{
+		Name:        m.Name(),
+		Description: m.Description(),
+		Measure:     m,
+		Aggregation: view.Count(),
+	}
+	err = view.Register(v)
+	require.Nil(t, err)
+	defer view.Unregister(v)
+
+	signals := 20
+	for i := 0; i < signals; i++ {
+		stats.Record(context.Background(), m.M(1))
+	}
+	time.Sleep(1 * time.Second)
+
+	expectedMetric := `
+# HELP pgateway_run_tests_foo foo
+# TYPE pgateway_run_tests_foo counter
+pgateway_run_tests_foo{instance="",job="pgateway_run"} 20
 `
 	verifyData(t, expectedMetric)
 }

@@ -10,5 +10,11 @@ Provides OpenCensus metrics export support for Prometheus.
 $ go get -u contrib.go.opencensus.io/exporter/prometheus
 ```
 
+## Testing:
+- Run the pushgateway:
+```bash
+docker run -d -p 9091:9091 prom/pushgateway
+```
+
 [godoc-image]: https://godoc.org/contrib.go.opencensus.io/exporter/prometheus?status.svg
 [godoc-url]: https://godoc.org/contrib.go.opencensus.io/exporter/prometheus

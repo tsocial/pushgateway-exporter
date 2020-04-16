@@ -16,5 +16,15 @@ $ go get -u contrib.go.opencensus.io/exporter/prometheus
 docker run -d -p 9091:9091 prom/pushgateway
 ```
 
+- Run tests using the local environment:
+```bash
+make test
+```
+
+- Run tests using the Docker environment:
+```bash
+make ci-test
+```
+
 [godoc-image]: https://godoc.org/contrib.go.opencensus.io/exporter/prometheus?status.svg
 [godoc-url]: https://godoc.org/contrib.go.opencensus.io/exporter/prometheus
